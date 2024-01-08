@@ -19,6 +19,17 @@ type Logger interface {
 	Errorf(string, ...interface{}) error
 }
 
+const (
+	Restore   = "\033[0m"
+	Red       = "\033[00;31m"
+	Green     = "\033[00;32m"
+	Yellow    = "\033[00;33m"
+	Blue      = "\033[00;34m"
+	Purple    = "\033[00;35m"
+	Cyan      = "\033[00;36m"
+	LightGrey = "\033[00;37m"
+)
+
 var writerMutex sync.Mutex
 var std = newDefaultLogger()
 
@@ -43,6 +54,7 @@ type DefaultLogger struct {
 	printFullFilePath        bool
 	disableWriterMutex       bool
 	prefix                   string
+	disableColor             bool
 }
 
 // TODO update so config can be used to set all values
@@ -60,12 +72,21 @@ const (
 
 func NewDefaultLogger(config DefaultLoggerConfig) (defaultLogger *DefaultLogger) {
 	defaultLogger = &DefaultLogger{
-		pid:      os.Getpid(),
-		logLevel: LogLevelDebug,
-		writer:   os.Stderr,
+		pid:          os.Getpid(),
+		logLevel:     LogLevelDebug,
+		writer:       os.Stderr,
+		disableColor: true,
 	}
 
 	return defaultLogger
+}
+
+func EnableColor() {
+	std.EnableColor()
+}
+
+func DisableColor() {
+	std.EnableColor()
 }
 
 func SetPrefix(prefix string) {
@@ -115,6 +136,28 @@ func Warnf(format string, args ...interface{}) error {
 
 func Errorf(format string, args ...interface{}) error {
 	return std.Errorf(format, args...)
+}
+
+func (m *DefaultLogger) EnableColor() {
+	if !m.disableWriterMutex {
+		writerMutex.Lock()
+		defer writerMutex.Unlock()
+	} else {
+		m.m.Lock()
+		defer m.m.Unlock()
+	}
+	m.disableColor = false
+}
+
+func (m *DefaultLogger) DisableColor() {
+	if !m.disableWriterMutex {
+		writerMutex.Lock()
+		defer writerMutex.Unlock()
+	} else {
+		m.m.Lock()
+		defer m.m.Unlock()
+	}
+	m.disableColor = true
 }
 
 func (m *DefaultLogger) SetPrefix(prefix string) {
@@ -214,7 +257,7 @@ func (m *DefaultLogger) Debugf(format string, args ...interface{}) error {
 		defer m.m.Unlock()
 	}
 	if m.logLevel <= LogLevelDebug {
-		return m.logf("DEBUG", format, args...)
+		return m.logf(LogLevelDebug, format, args...)
 	}
 	return nil
 }
@@ -228,7 +271,7 @@ func (m *DefaultLogger) Infof(format string, args ...interface{}) error {
 		defer m.m.Unlock()
 	}
 	if m.logLevel <= LogLevelInfo {
-		return m.logf("INFO", format, args...)
+		return m.logf(LogLevelInfo, format, args...)
 	}
 	return nil
 
@@ -243,7 +286,7 @@ func (m *DefaultLogger) Warnf(format string, args ...interface{}) error {
 		defer m.m.Unlock()
 	}
 	if m.logLevel <= LogLevelWarn {
-		return m.logf("WARN", format, args...)
+		return m.logf(LogLevelWarn, format, args...)
 	}
 	return nil
 }
@@ -257,7 +300,7 @@ func (m *DefaultLogger) Errorf(format string, args ...interface{}) error {
 		defer m.m.Unlock()
 	}
 	if m.logLevel <= LogLevelError {
-		return m.logf("ERROR", format, args...)
+		return m.logf(LogLevelError, format, args...)
 	}
 	return nil
 }
@@ -273,7 +316,7 @@ func (m *DefaultLogger) getExtras() (extra string) {
 	return extra
 }
 
-func (m *DefaultLogger) logf(level string, format string, args ...interface{}) (err error) {
+func (m *DefaultLogger) logf(logLevel LogLevel, format string, args ...interface{}) (err error) {
 	var (
 		msg                 string
 		file                string
@@ -284,6 +327,7 @@ func (m *DefaultLogger) logf(level string, format string, args ...interface{}) (
 		previousLogTimeDiff time.Duration
 		prefix              string
 		prevLogDiffStr      string
+		level               string
 	)
 	msg = fmt.Sprintf(format, args...)
 
@@ -301,6 +345,30 @@ func (m *DefaultLogger) logf(level string, format string, args ...interface{}) (
 		prefix = " (" + m.prefix + ")"
 	}
 
+	if !m.disableColor {
+		switch logLevel {
+		case LogLevelDebug:
+			level = Purple + "DEBUG" + Restore
+		case LogLevelInfo:
+			level = Blue + "INFO" + Restore
+		case LogLevelWarn:
+			level = Yellow + "WARN" + Restore
+		case LogLevelError:
+			level = Red + "ERROR" + Restore
+		}
+	} else {
+		switch logLevel {
+		case LogLevelDebug:
+			level = "DEBUG"
+		case LogLevelInfo:
+			level = "INFO"
+		case LogLevelWarn:
+			level = "WARN"
+		case LogLevelError:
+			level = "ERROR"
+		}
+	}
+
 	if m.printDiffPreviousLogTime {
 		if m.previousLogTime.IsZero() {
 			previousLogTimeDiff = 0
@@ -311,7 +379,7 @@ func (m *DefaultLogger) logf(level string, format string, args ...interface{}) (
 		m.previousLogTime = logTime
 		prevLogDiffStr = fmt.Sprintf(" PrevLogDiff:%s", previousLogTimeDiff)
 	}
-	_, err = m.writer.Write([]byte(fmt.Sprintf("%s %s:%d%s [%s] %s %s\n", logTimeStr, file, line, prefix, level, msg, prevLogDiffStr)))
+	_, err = m.writer.Write([]byte(fmt.Sprintf("%s %s:%d%s [%s] %s %s%s\n", logTimeStr, file, line, prefix, level, msg, prevLogDiffStr, m.getExtras())))
 
 	return err
 }
