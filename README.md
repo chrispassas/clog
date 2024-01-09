@@ -1,4 +1,4 @@
-[![GoDoc](https://pkg.go.dev/github.com/chrispassas/silk?status.svg)](https://pkg.go.dev/github.com/chrispassas/silk)
+[![GoDoc](https://godoc.org/github.com/chrispassas/clog?status.svg)](https://godoc.org/github.com/chrispassas/clog)
 
 # clog
 This is a simple logger that is easy to understand and use. Only stdlib libraries are used.
