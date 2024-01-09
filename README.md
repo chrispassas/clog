@@ -3,7 +3,7 @@ This is a simple logger that is easy to understand and use. Only stdlib librarie
 
 
 
-## Example
+## Example 1
 Global clog
 
 In this example you can use clog similar to how you might use the standard package log.
@@ -13,7 +13,7 @@ package main
 
 import (
 	"log"
-    "time"
+	"time"
 
 	"github.com/chrispassas/clog"
 )
@@ -45,7 +45,7 @@ func main() {
 2024-01-09 17:55:43.272959 main.go:26 (main) [DEBUG] This has a prefix and pid PrevLogDiff:311.667µs PID:12462
 ```
 
-## Example
+## Example 2
 Instance of clog
 
 This shows creating multiple instances of clog so the output can be customized depending on the codes needs.

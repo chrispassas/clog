@@ -48,6 +48,7 @@ const (
 	LogLevelInfo  LogLevel = 2
 	LogLevelWarn  LogLevel = 3
 	LogLevelError LogLevel = 4
+	LogLevelFatal LogLevel = 5
 
 	OutputFormatStd        OutputFormat = 1
 	OutputFormatJSON       OutputFormat = 2
@@ -196,6 +197,11 @@ func Warnf(format string, args ...interface{}) error {
 // Errorf prints ERROR level for standard clog instance
 func Errorf(format string, args ...interface{}) error {
 	return std.Errorf(format, args...)
+}
+
+// Errorf prints FATAL level for standard clog instance
+func Fatalf(format string, args ...interface{}) {
+	std.Fatalf(format, args...)
 }
 
 // SetOutputFormat change output format
@@ -417,6 +423,21 @@ func (m *CLog) Errorf(format string, args ...interface{}) error {
 	return nil
 }
 
+// Fatalf prints FATAL level then os.Exit(1)
+func (m *CLog) Fatalf(format string, args ...interface{}) {
+	if !m.disableWriterMutex {
+		writerMutex.Lock()
+		defer writerMutex.Unlock()
+	} else {
+		m.m.Lock()
+		defer m.m.Unlock()
+	}
+	if m.logLevel <= LogLevelFatal {
+		m.logf(LogLevelFatal, format, args...)
+	}
+	os.Exit(1) //nolint
+}
+
 func (m *CLog) getExtras() (extra string) {
 
 	if len(m.uuid) > 0 {
@@ -483,6 +504,8 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 		level = "WARN"
 	case LogLevelError:
 		level = "ERROR"
+	case LogLevelFatal:
+		level = "FATAL"
 	}
 
 	switch m.outputFormat {
@@ -496,7 +519,7 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 				level = blue + level + restore
 			case LogLevelWarn:
 				level = yellow + level + restore
-			case LogLevelError:
+			case LogLevelError, LogLevelFatal:
 				level = red + level + restore
 			}
 		}
