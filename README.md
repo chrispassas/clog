@@ -90,7 +90,7 @@ func main() {
 }
 ```
 
-###Output
+### Output
 ```bash
 2024-01-09 18:03:33.905305 main.go:14 (main) [INFO] Main started PrevLogDiff:0s PID:13308
 2024-01-09 18:03:33.905683 main.go:29 (main) [INFO] Server is listening on :8080 PrevLogDiff:378.208µs PID:13308
