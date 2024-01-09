@@ -1,39 +1,23 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"os"
+	"time"
 
 	"github.com/chrispassas/clog"
 )
 
 func main() {
-	log.Printf("test")
-	log := clog.New().EnableColor()
-	log.EnableLogDiffs()
-	log.SetPrefix("main")
-	log.EnablePid()
-	log.SetUUID("0000")
-	// log.EnableColor()
-	var err error
-	if err = log.Debugf("test"); err != nil {
-		fmt.Printf("error:%v", err)
-	}
-	log.Infof("test2")
-	log.Warnf("test3")
-	log.Errorf("test4")
+	clog.Debugf("This is a debug message")
+	clog.Infof("This is a info message")
+	clog.Warnf("This is a warn message")
+	clog.Errorf("This is a error message")
 
-	clog.EnableColor().EnableLogDiffs().EnablePid().SetLogLevel(clog.LogLevelDebug)
-	// logger.EnableLogDiffs()
-	// logger.SetPrefix("foo")
-	// logger.EnableColor()
-	clog.SetWriter(os.Stdout)
-	// clog.SetLogLevel(clog.LogLevelError)
-	clog.Debugf("test")
-	clog.SetOutputFormat(clog.OutputFormatJSON)
-	clog.Debugf("This should be json")
-	clog.Infof("next log here")
-	clog.SetOutputFormat(clog.OutputFormatJSONIntent)
-	clog.Warnf("this is indented")
+	clog.EnableLogDiffs()
+	clog.Debugf("printing log with previous line diff turned on")
+	time.Sleep(time.Second)
+	clog.Debugf("printing log with previous line diff turned on again")
+
+	clog.EnablePid() // Add process ID to log line
+	clog.SetPrefix("main")
+	clog.Debugf("This has a prefix and pid")
 }

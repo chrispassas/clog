@@ -6,6 +6,8 @@ This is a simple logger that is easy to understand and use. Only stdlib librarie
 ## Example
 Global clog
 
+In this example you can use clog similar to how you might use the standard package log.
+
 ```go
 package main
 
@@ -46,18 +48,52 @@ func main() {
 ## Example
 Instance of clog
 
+This shows creating multiple instances of clog so the output can be customized depending on the codes needs.
+For example different goroutines might want a different log prefix or UUID per-request.
+
+Each instance can also set its own io.Writer (output file) as needed.
+
 ```go
 package main
 
 import (
-	"log"
+	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/chrispassas/clog"
 )
 
 func main() {
-    // Example here
-    log := clog.New()
+	logger := clog.New()
+	logger.SetPrefix("main").EnableLogDiffs().EnablePid()
+	logger.Infof("Main started")
 
+	// Define the endpoint handler function
+	handleTest := func(w http.ResponseWriter, r *http.Request) {
+		requestLogger := clog.New().EnableLogDiffs().EnablePid().SetPrefix("handleTest").SetUUID("0d01be9f-f965-4398-a046-1e83322cb243")
+		requestLogger.Debugf("request recieved")
+		time.Sleep(time.Second * 2)
+		fmt.Fprintln(w, "Example HTTP Response")
+		requestLogger.Debugf("request complete")
+	}
+
+	// Register the handler function for the "/hello" endpoint
+	http.HandleFunc("/test", handleTest)
+
+	// Start the web server on port 8080
+	logger.Infof("Server is listening on :8080")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		logger.Errorf("http.ListenAndServe() error:%v", err)
+	}
 }
+```
+
+###Output
+```bash
+2024-01-09 18:03:33.905305 main.go:14 (main) [INFO] Main started PrevLogDiff:0s PID:13308
+2024-01-09 18:03:33.905683 main.go:29 (main) [INFO] Server is listening on :8080 PrevLogDiff:378.208µs PID:13308
+2024-01-09 18:03:46.845565 main.go:19 (handleTest) [DEBUG] request recieved PrevLogDiff:0s UUID:0d01be9f-f965-4398-a046-1e83322cb243 PID:13308
+2024-01-09 18:03:48.848360 main.go:22 (handleTest) [DEBUG] request complete PrevLogDiff:2.0028025s UUID:0d01be9f-f965-4398-a046-1e83322cb243 PID:13308
 ```
