@@ -78,7 +78,7 @@ func main() {
 		requestLogger.Debugf("request complete")
 	}
 
-	// Register the handler function for the "/hello" endpoint
+	// Register the handler function for the "/test" endpoint
 	http.HandleFunc("/test", handleTest)
 
 	// Start the web server on port 8080
