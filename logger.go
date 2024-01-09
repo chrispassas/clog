@@ -1,6 +1,7 @@
 package clog
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -17,7 +18,21 @@ type Logger interface {
 	Errorf(string, ...interface{}) error
 }
 
+// Log struct for json encoding
+type Log struct {
+	Time          string `json:"time,omitempty"`
+	File          string `json:"file,omitempty"`
+	Line          int    `json:"line,omitempty"`
+	Prefix        string `json:"prefix,omitempty"`
+	Level         string `json:"level,omitempty"`
+	Msg           string `json:"msg,omitempty"`
+	PrevLogDiffMS int64  `json:"prev_log_diff_ms,omitempty"`
+	Pid           int    `json:"pid,omitempty"`
+	UUID          string `json:"uuid,omitempty"`
+}
+
 type LogLevel int
+type OutputFormat int
 
 const (
 	restore   = "\033[0m"
@@ -34,6 +49,10 @@ const (
 	LogLevelWarn  LogLevel = 3
 	LogLevelError LogLevel = 4
 
+	OutputFormatStd        OutputFormat = 1
+	OutputFormatJSON       OutputFormat = 2
+	OutputFormatJSONIntent OutputFormat = 3
+
 	defaultTimeFormat = "2006-01-02 15:04:05.000000"
 )
 
@@ -42,7 +61,7 @@ const (
 var writerMutex sync.Mutex //nolint
 
 // std this instance of clog can be used without creating an instance similar to the Go standard library logger
-var std = New() //nolint
+var std = newStd() //nolint
 
 // CLog contains all settings and values to support clog usage
 type CLog struct {
@@ -59,6 +78,15 @@ type CLog struct {
 	prefix                   string
 	disableColor             bool
 	dateTimeFormat           string
+	outputFormat             OutputFormat
+	// isStd if set to true use +1 on runtime.Caller()
+	isStd bool
+}
+
+func newStd() (cLog *CLog) {
+	cLog = New()
+	cLog.isStd = true
+	return cLog
 }
 
 // New return new instance of clog
@@ -69,9 +97,16 @@ func New() (cLog *CLog) {
 		writer:         os.Stderr,
 		disableColor:   true,
 		dateTimeFormat: defaultTimeFormat,
+		outputFormat:   OutputFormatStd,
 	}
 
 	return cLog
+}
+
+// SetOutputFormat change output format for standard clog instance
+func SetOutputFormat(format OutputFormat) *CLog {
+	std.SetOutputFormat(format)
+	return std
 }
 
 // SetTimeFormat change time format for standard clog instance
@@ -161,6 +196,19 @@ func Warnf(format string, args ...interface{}) error {
 // Errorf prints ERROR level for standard clog instance
 func Errorf(format string, args ...interface{}) error {
 	return std.Errorf(format, args...)
+}
+
+// SetOutputFormat change output format
+func (m *CLog) SetOutputFormat(format OutputFormat) *CLog {
+	if !m.disableWriterMutex {
+		writerMutex.Lock()
+		defer writerMutex.Unlock()
+	} else {
+		m.m.Lock()
+		defer m.m.Unlock()
+	}
+	m.outputFormat = format
+	return std
 }
 
 // SetTimeFormat change time format
@@ -396,7 +444,12 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 	)
 	msg = fmt.Sprintf(format, args...)
 
-	_, file, line, ok = runtime.Caller(2)
+	if m.isStd {
+		_, file, line, ok = runtime.Caller(3)
+	} else {
+		_, file, line, ok = runtime.Caller(2)
+	}
+
 	if !ok {
 		file = "???"
 		line = 0
@@ -410,30 +463,6 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 		prefix = " (" + m.prefix + ")"
 	}
 
-	switch logLevel {
-	case LogLevelDebug:
-		level = "DEBUG"
-	case LogLevelInfo:
-		level = "INFO"
-	case LogLevelWarn:
-		level = "WARN"
-	case LogLevelError:
-		level = "ERROR"
-	}
-
-	if !m.disableColor {
-		switch logLevel {
-		case LogLevelDebug:
-			level = purple + level + restore
-		case LogLevelInfo:
-			level = blue + level + restore
-		case LogLevelWarn:
-			level = yellow + level + restore
-		case LogLevelError:
-			level = red + level + restore
-		}
-	}
-
 	if m.printDiffPreviousLogTime {
 		if m.previousLogTime.IsZero() {
 			previousLogTimeDiff = 0
@@ -445,18 +474,85 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 		prevLogDiffStr = fmt.Sprintf(" PrevLogDiff:%s", previousLogTimeDiff)
 	}
 
-	if n, err = m.writer.Write(
-		[]byte(fmt.Sprintf("%s %s:%d%s [%s] %s%s%s\n",
-			logTimeStr,
-			file,
-			line,
-			prefix,
-			level,
-			msg,
-			prevLogDiffStr,
-			m.getExtras(),
-		))); err != nil {
-		err = fmt.Errorf("m.writer.Write() n:%d error:%w", n, err)
+	switch logLevel {
+	case LogLevelDebug:
+		level = "DEBUG"
+	case LogLevelInfo:
+		level = "INFO"
+	case LogLevelWarn:
+		level = "WARN"
+	case LogLevelError:
+		level = "ERROR"
+	}
+
+	switch m.outputFormat {
+	case OutputFormatStd:
+
+		if !m.disableColor {
+			switch logLevel {
+			case LogLevelDebug:
+				level = purple + level + restore
+			case LogLevelInfo:
+				level = blue + level + restore
+			case LogLevelWarn:
+				level = yellow + level + restore
+			case LogLevelError:
+				level = red + level + restore
+			}
+		}
+
+		if n, err = m.writer.Write(
+			[]byte(fmt.Sprintf("%s %s:%d%s [%s] %s%s%s\n",
+				logTimeStr,
+				file,
+				line,
+				prefix,
+				level,
+				msg,
+				prevLogDiffStr,
+				m.getExtras(),
+			))); err != nil {
+			err = fmt.Errorf("m.writer.Write() n:%d error:%w", n, err)
+		}
+		break
+	case OutputFormatJSON, OutputFormatJSONIntent:
+
+		log := Log{
+			Time:          logTimeStr,
+			File:          file,
+			Line:          line,
+			Prefix:        prefix,
+			Level:         level,
+			Msg:           msg,
+			PrevLogDiffMS: previousLogTimeDiff.Milliseconds(),
+		}
+		if len(m.uuid) > 0 {
+			log.UUID = m.uuid
+		}
+		if m.printPid {
+			log.Pid = m.pid
+		}
+
+		var jsonBytes []byte
+		switch m.outputFormat {
+		case OutputFormatJSON:
+			if jsonBytes, err = json.Marshal(&log); err != nil {
+				err = fmt.Errorf("json.Marshal() error:%w", err)
+				return err
+			}
+		case OutputFormatJSONIntent:
+			if jsonBytes, err = json.MarshalIndent(&log, "", "\t"); err != nil {
+				err = fmt.Errorf("json.Marshal() error:%w", err)
+				return err
+			}
+		}
+
+		if n, err = m.writer.Write(append(jsonBytes, '\n')); err != nil {
+			err = fmt.Errorf("m.writer.Write() n:%d error:%w", n, err)
+		}
+		break
+	default:
+		err = fmt.Errorf("Unsupported OutputFormat:%d", m.outputFormat)
 	}
 
 	return err

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/chrispassas/clog"
 )
@@ -27,6 +28,12 @@ func main() {
 	// logger.EnableLogDiffs()
 	// logger.SetPrefix("foo")
 	// logger.EnableColor()
+	clog.SetWriter(os.Stdout)
+	// clog.SetLogLevel(clog.LogLevelError)
 	clog.Debugf("test")
-
+	clog.SetOutputFormat(clog.OutputFormatJSON)
+	clog.Debugf("This should be json")
+	clog.Infof("next log here")
+	clog.SetOutputFormat(clog.OutputFormatJSONIntent)
+	clog.Warnf("this is indented")
 }
