@@ -3,7 +3,24 @@
 # clog
 This is a simple logger that is easy to understand and use. Only stdlib libraries are used.
 
+## Installation
 
+`go get -u github.com/chrispassas/clog`
+
+## Quick Start
+```go
+	clog.Debugf("This is a debug message")
+	clog.Infof("This is a info message")
+	clog.Warnf("This is a warn message")
+	clog.Errorf("This is a error message")
+
+	// Or create instance of logger you can customize
+
+	log := clog.New()
+	log.SetPrefix("main")
+	log.EnablePid()
+	log.Infof("Main started")
+```
 
 ## Example 1
 Global clog
