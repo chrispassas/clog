@@ -125,3 +125,5 @@ func main() {
 2024-01-09 18:03:46.845565 main.go:19 (handleTest) [DEBUG] request recieved PrevLogDiff:0s UUID:0d01be9f-f965-4398-a046-1e83322cb243 PID:13308
 2024-01-09 18:03:48.848360 main.go:22 (handleTest) [DEBUG] request complete PrevLogDiff:2.0028025s UUID:0d01be9f-f965-4398-a046-1e83322cb243 PID:13308
 ```
+
+[doc]: https://godoc.org/github.com/chrispassas/clog
