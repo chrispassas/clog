@@ -16,7 +16,6 @@ type Logger interface {
 	Infof(string, ...interface{}) error
 	Warnf(string, ...interface{}) error
 	Errorf(string, ...interface{}) error
-	Fatalf(string, ...interface{})
 }
 
 // Log struct for json encoding
@@ -53,7 +52,7 @@ const (
 
 	OutputFormatStd        OutputFormat = 1
 	OutputFormatJSON       OutputFormat = 2
-	OutputFormatJSONIntent OutputFormat = 3
+	OutputFormatJSONIndent OutputFormat = 3
 
 	defaultTimeFormat = "2006-01-02 15:04:05.000000"
 )
@@ -514,7 +513,7 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 			err = fmt.Errorf("m.writer.Write() n:%d error:%w", n, err)
 		}
 		break
-	case OutputFormatJSON, OutputFormatJSONIntent:
+	case OutputFormatJSON, OutputFormatJSONIndent:
 
 		log := Log{
 			Time:          logTimeStr,
@@ -539,7 +538,7 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 				err = fmt.Errorf("json.Marshal() error:%w", err)
 				return err
 			}
-		case OutputFormatJSONIntent:
+		case OutputFormatJSONIndent:
 			if jsonBytes, err = json.MarshalIndent(&log, "", "\t"); err != nil {
 				err = fmt.Errorf("json.Marshal() error:%w", err)
 				return err
