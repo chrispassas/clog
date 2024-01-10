@@ -12,7 +12,7 @@ func main() {
 	clog.Warnf("This is a warn message")
 	clog.Errorf("This is a error message")
 
-	clog.EnableLogDiffs()
+	clog.EnableDiffs()
 	clog.Debugf("printing log with previous line diff turned on")
 	time.Sleep(time.Second)
 	clog.Debugf("printing log with previous line diff turned on again")

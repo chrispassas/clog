@@ -11,14 +11,14 @@ import (
 func main() {
 	logger := clog.New()
 	logger.SetPrefix("main")
-	logger.EnableLogDiffs()
+	logger.EnableDiffs()
 	logger.EnablePid()
 	logger.Infof("Main started")
 
 	// Define the endpoint handler function
 	handleTest := func(w http.ResponseWriter, r *http.Request) {
 		requestLogger := clog.New()
-		requestLogger.EnableLogDiffs()
+		requestLogger.EnableDiffs()
 		requestLogger.EnablePid()
 		requestLogger.SetPrefix("handleTest")
 		requestLogger.SetUUID("0d01be9f-f965-4398-a046-1e83322cb243")

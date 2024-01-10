@@ -1,7 +1,7 @@
 [![GoDoc](https://godoc.org/github.com/chrispassas/clog?status.svg)](https://godoc.org/github.com/chrispassas/clog)
 
 # clog
-This is a simple logger that is easy to understand and use. Only stdlib libraries are used.
+This is a simple logger that is easy to understand. Only stdlib libraries are used.
 
 ## Installation
 
@@ -44,7 +44,7 @@ func main() {
 	clog.Warnf("This is a warn message")
 	clog.Errorf("This is a error message")
 
-	clog.EnableLogDiffs()
+	clog.EnableDiffs()
 	clog.Debugf("printing log with previous line diff turned on")
 	time.Sleep(time.Second)
 	clog.Debugf("printing log with previous line diff turned on again")
@@ -88,14 +88,14 @@ import (
 func main() {
 	logger := clog.New()
 	logger.SetPrefix("main")
-	logger.EnableLogDiffs()
+	logger.EnableDiffs()
 	logger.EnablePid()
 	logger.Infof("Main started")
 
 	// Define the endpoint handler function
 	handleTest := func(w http.ResponseWriter, r *http.Request) {
 		requestLogger := clog.New()
-		requestLogger.EnableLogDiffs()
+		requestLogger.EnableDiffs()
 		requestLogger.EnablePid()
 		requestLogger.SetPrefix("handleTest")
 		requestLogger.SetUUID("0d01be9f-f965-4398-a046-1e83322cb243")

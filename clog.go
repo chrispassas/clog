@@ -138,10 +138,10 @@ func SetPrefix(prefix string) {
 	std.SetPrefix(prefix)
 }
 
-// EnableLogDiffs turn on time diff since last log line for standard clog instance
+// EnableDiffs turn on time diff since last log line for standard clog instance
 // This can makes it easy to see how much time has passed since the last log line.
-func EnableLogDiffs() {
-	std.EnableLogDiffs()
+func EnableDiffs() {
+	std.EnableDiffs()
 }
 
 // DisableLogDiffs turn off log time diffing for standard clog instance
@@ -261,9 +261,9 @@ func (m *CLog) SetPrefix(prefix string) {
 	m.prefix = prefix
 }
 
-// EnableLogDiffs turn on time diff since last log line
+// EnableDiffs turn on time diff since last log line
 // This can makes it easy to see how much time has passed since the last log line.
-func (m *CLog) EnableLogDiffs() {
+func (m *CLog) EnableDiffs() {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
