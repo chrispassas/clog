@@ -22,6 +22,8 @@ This is a simple logger that is easy to understand and use. Only stdlib librarie
 	log.Infof("Main started")
 ```
 
+See the [documentation][doc]
+
 ## Example 1
 Global clog
 
