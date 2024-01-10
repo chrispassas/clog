@@ -12,10 +12,10 @@ import (
 )
 
 type Logger interface {
-	Debugf(string, ...interface{}) error
-	Infof(string, ...interface{}) error
-	Warnf(string, ...interface{}) error
-	Errorf(string, ...interface{}) error
+	Debugf(string, ...interface{})
+	Infof(string, ...interface{})
+	Warnf(string, ...interface{})
+	Errorf(string, ...interface{})
 }
 
 // Log struct for json encoding
@@ -167,24 +167,24 @@ func DisablePid() {
 }
 
 // Debugf prints DEBUG level for standard clog instance
-func Debugf(format string, args ...interface{}) error {
-	return std.Debugf(format, args...)
+func Debugf(format string, args ...interface{}) {
+	std.Debugf(format, args...)
 }
 
 // Infof prints INFO level for standard clog instance
-func Infof(format string, args ...interface{}) error {
-	return std.Infof(format, args...)
+func Infof(format string, args ...interface{}) {
+	std.Infof(format, args...)
 
 }
 
 // Warnf prints WARN level for standard clog instance
-func Warnf(format string, args ...interface{}) error {
-	return std.Warnf(format, args...)
+func Warnf(format string, args ...interface{}) {
+	std.Warnf(format, args...)
 }
 
 // Errorf prints ERROR level for standard clog instance
-func Errorf(format string, args ...interface{}) error {
-	return std.Errorf(format, args...)
+func Errorf(format string, args ...interface{}) {
+	std.Errorf(format, args...)
 }
 
 // Errorf prints FATAL level for standard clog instance
@@ -339,7 +339,7 @@ func (m *CLog) DisablePid() {
 }
 
 // Debugf prints DEBUG level
-func (m *CLog) Debugf(format string, args ...interface{}) error {
+func (m *CLog) Debugf(format string, args ...interface{}) {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -348,13 +348,12 @@ func (m *CLog) Debugf(format string, args ...interface{}) error {
 		defer m.m.Unlock()
 	}
 	if m.logLevel <= LogLevelDebug {
-		return m.logf(LogLevelDebug, format, args...)
+		m.logf(LogLevelDebug, format, args...)
 	}
-	return nil
 }
 
 // Infof prints INFO level
-func (m *CLog) Infof(format string, args ...interface{}) error {
+func (m *CLog) Infof(format string, args ...interface{}) {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -363,13 +362,12 @@ func (m *CLog) Infof(format string, args ...interface{}) error {
 		defer m.m.Unlock()
 	}
 	if m.logLevel <= LogLevelInfo {
-		return m.logf(LogLevelInfo, format, args...)
+		m.logf(LogLevelInfo, format, args...)
 	}
-	return nil
 }
 
 // Warnf prints WARN level
-func (m *CLog) Warnf(format string, args ...interface{}) error {
+func (m *CLog) Warnf(format string, args ...interface{}) {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -378,13 +376,12 @@ func (m *CLog) Warnf(format string, args ...interface{}) error {
 		defer m.m.Unlock()
 	}
 	if m.logLevel <= LogLevelWarn {
-		return m.logf(LogLevelWarn, format, args...)
+		m.logf(LogLevelWarn, format, args...)
 	}
-	return nil
 }
 
 // Errorf prints ERROR level
-func (m *CLog) Errorf(format string, args ...interface{}) error {
+func (m *CLog) Errorf(format string, args ...interface{}) {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -393,9 +390,8 @@ func (m *CLog) Errorf(format string, args ...interface{}) error {
 		defer m.m.Unlock()
 	}
 	if m.logLevel <= LogLevelError {
-		return m.logf(LogLevelError, format, args...)
+		m.logf(LogLevelError, format, args...)
 	}
-	return nil
 }
 
 // Fatalf prints FATAL level then os.Exit(1)
