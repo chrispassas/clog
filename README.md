@@ -14,7 +14,6 @@ In this example you can use clog similar to how you might use the standard packa
 package main
 
 import (
-	"log"
 	"time"
 
 	"github.com/chrispassas/clog"
@@ -35,6 +34,7 @@ func main() {
 	clog.SetPrefix("main")
 	clog.Debugf("This has a prefix and pid")
 }
+
 ```
 ### Output
 ```bash
@@ -68,12 +68,18 @@ import (
 
 func main() {
 	logger := clog.New()
-	logger.SetPrefix("main").EnableLogDiffs().EnablePid()
+	logger.SetPrefix("main")
+	logger.EnableLogDiffs()
+	logger.EnablePid()
 	logger.Infof("Main started")
 
 	// Define the endpoint handler function
 	handleTest := func(w http.ResponseWriter, r *http.Request) {
-		requestLogger := clog.New().EnableLogDiffs().EnablePid().SetPrefix("handleTest").SetUUID("0d01be9f-f965-4398-a046-1e83322cb243")
+		requestLogger := clog.New()
+		requestLogger.EnableLogDiffs()
+		requestLogger.EnablePid()
+		requestLogger.SetPrefix("handleTest")
+		requestLogger.SetUUID("0d01be9f-f965-4398-a046-1e83322cb243")
 		requestLogger.Debugf("request recieved")
 		time.Sleep(time.Second * 2)
 		fmt.Fprintln(w, "Example HTTP Response")
@@ -90,6 +96,7 @@ func main() {
 		logger.Errorf("http.ListenAndServe() error:%v", err)
 	}
 }
+
 ```
 
 ### Output
