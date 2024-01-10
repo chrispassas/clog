@@ -61,9 +61,9 @@ func main() {
 2024-01-09 17:55:42.271504 main.go:15 [INFO] This is a info message
 2024-01-09 17:55:42.271514 main.go:16 [WARN] This is a warn message
 2024-01-09 17:55:42.271520 main.go:17 [ERROR] This is a error message
-2024-01-09 17:55:42.271526 main.go:20 [DEBUG] printing log with previous line diff turned on PrevLogDiff:0s
-2024-01-09 17:55:43.272648 main.go:22 [DEBUG] printing log with previous line diff turned on again PrevLogDiff:1.001120708s
-2024-01-09 17:55:43.272959 main.go:26 (main) [DEBUG] This has a prefix and pid PrevLogDiff:311.667µs PID:12462
+2024-01-09 17:55:42.271526 main.go:20 [DEBUG] printing log with previous line diff turned on DIFF:0s
+2024-01-09 17:55:43.272648 main.go:22 [DEBUG] printing log with previous line diff turned on again DIFF:1.001120708s
+2024-01-09 17:55:43.272959 main.go:26 (main) [DEBUG] This has a prefix and pid DIFF:311.667µs PID:12462
 ```
 
 ## Example 2
@@ -120,10 +120,10 @@ func main() {
 
 ### Output
 ```bash
-2024-01-09 18:03:33.905305 main.go:14 (main) [INFO] Main started PrevLogDiff:0s PID:13308
-2024-01-09 18:03:33.905683 main.go:29 (main) [INFO] Server is listening on :8080 PrevLogDiff:378.208µs PID:13308
-2024-01-09 18:03:46.845565 main.go:19 (handleTest) [DEBUG] request recieved PrevLogDiff:0s UUID:0d01be9f-f965-4398-a046-1e83322cb243 PID:13308
-2024-01-09 18:03:48.848360 main.go:22 (handleTest) [DEBUG] request complete PrevLogDiff:2.0028025s UUID:0d01be9f-f965-4398-a046-1e83322cb243 PID:13308
+2024-01-09 18:03:33.905305 main.go:14 (main) [INFO] Main started DIFF:0s PID:13308
+2024-01-09 18:03:33.905683 main.go:29 (main) [INFO] Server is listening on :8080 DIFF:378.208µs PID:13308
+2024-01-09 18:03:46.845565 main.go:19 (handleTest) [DEBUG] request recieved DIFF:0s uuid:0d01be9f-f965-4398-a046-1e83322cb243 PID:13308
+2024-01-09 18:03:48.848360 main.go:22 (handleTest) [DEBUG] request complete DIFF:2.0028025s UUID:0d01be9f-f965-4398-a046-1e83322cb243 PID:13308
 ```
 
 [doc]: https://godoc.org/github.com/chrispassas/clog

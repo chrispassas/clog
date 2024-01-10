@@ -20,15 +20,24 @@ type Logger interface {
 
 // Log struct for json encoding
 type Log struct {
-	Time          string `json:"time,omitempty"`
-	File          string `json:"file,omitempty"`
-	Line          int    `json:"line,omitempty"`
-	Prefix        string `json:"prefix,omitempty"`
-	Level         string `json:"level,omitempty"`
-	Msg           string `json:"msg,omitempty"`
-	PrevLogDiffMS int64  `json:"prev_log_diff_ms,omitempty"`
-	Pid           int    `json:"pid,omitempty"`
-	UUID          string `json:"uuid,omitempty"`
+	// Time when the log method was called Debugf, Infof, Warnf, Errorf
+	Time string `json:"time,omitempty"`
+	// File that called log method
+	File string `json:"file,omitempty"`
+	// Line number where log method was called
+	Line int `json:"line,omitempty"`
+	// Prefix allows adding a label to different instances of the logger
+	Prefix string `json:"prefix,omitempty"`
+	// Level debug, info, warn, error
+	Level string `json:"level,omitempty"`
+	// Msg log message
+	Msg string `json:"msg,omitempty"`
+	// Diff time passes since previous log method was called
+	Diff int64 `json:"diff,omitempty"`
+	// Pid process id
+	Pid int `json:"pid,omitempty"`
+	// UUID optional uuid for tracing and other uses
+	UUID string `json:"uuid,omitempty"`
 }
 
 type LogLevel int
@@ -463,7 +472,7 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 		}
 
 		m.previousLogTime = logTime
-		prevLogDiffStr = fmt.Sprintf(" PrevLogDiff:%s", previousLogTimeDiff)
+		prevLogDiffStr = fmt.Sprintf(" DIFF:%s", previousLogTimeDiff)
 	}
 
 	switch logLevel {
@@ -512,13 +521,13 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 	case OutputFormatJSON, OutputFormatJSONIndent:
 
 		log := Log{
-			Time:          logTimeStr,
-			File:          file,
-			Line:          line,
-			Prefix:        prefix,
-			Level:         level,
-			Msg:           msg,
-			PrevLogDiffMS: previousLogTimeDiff.Milliseconds(),
+			Time:   logTimeStr,
+			File:   file,
+			Line:   line,
+			Prefix: prefix,
+			Level:  level,
+			Msg:    msg,
+			Diff:   previousLogTimeDiff.Milliseconds(),
 		}
 		if len(m.uuid) > 0 {
 			log.UUID = m.uuid
