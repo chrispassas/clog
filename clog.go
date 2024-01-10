@@ -16,6 +16,7 @@ type Logger interface {
 	Infof(string, ...interface{}) error
 	Warnf(string, ...interface{}) error
 	Errorf(string, ...interface{}) error
+	Fatalf(string, ...interface{})
 }
 
 // Log struct for json encoding
