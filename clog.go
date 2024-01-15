@@ -85,7 +85,7 @@ type CLog struct {
 	pid                      int
 	printPid                 bool
 	logLevel                 LogLevel
-	writer                   io.Writer
+	w                        io.Writer
 	previousLogTime          time.Time
 	printDiffPreviousLogTime bool
 	printSource              PrintSource
@@ -109,7 +109,7 @@ func New() (cLog *CLog) {
 	cLog = &CLog{
 		pid:            os.Getpid(),
 		logLevel:       LogLevelDebug,
-		writer:         os.Stderr,
+		w:              os.Stderr,
 		disableColor:   true,
 		printSource:    PrintSourceFile,
 		dateTimeFormat: defaultTimeFormat,
@@ -240,7 +240,7 @@ func (m *CLog) Copy() *CLog {
 		pid:                      m.pid,
 		printPid:                 m.printPid,
 		logLevel:                 m.logLevel,
-		writer:                   m.writer,
+		w:                        m.w,
 		printDiffPreviousLogTime: m.printDiffPreviousLogTime,
 		printSource:              m.printSource,
 		disableWriterMutex:       m.disableWriterMutex,
@@ -370,7 +370,7 @@ func (m *CLog) SetWriter(w io.Writer) *CLog {
 		m.m.Lock()
 		defer m.m.Unlock()
 	}
-	m.writer = w
+	m.w = w
 	return m
 }
 
@@ -593,7 +593,7 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 			}
 		}
 
-		if n, err = m.writer.Write(
+		if n, err = m.w.Write(
 			[]byte(fmt.Sprintf("%s %s%s [%s] %s%s%s\n",
 				logTimeStr,
 				fileStr,
@@ -638,7 +638,7 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 			}
 		}
 
-		if n, err = m.writer.Write(append(jsonBytes, '\n')); err != nil {
+		if n, err = m.w.Write(append(jsonBytes, '\n')); err != nil {
 			err = fmt.Errorf("m.writer.Write() n:%d error:%w", n, err)
 		}
 		break
