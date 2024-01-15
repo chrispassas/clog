@@ -114,65 +114,77 @@ func New() (cLog *CLog) {
 }
 
 // SetOutputFormat change output format for standard clog instance
-func SetOutputFormat(format OutputFormat) {
+func SetOutputFormat(format OutputFormat) *CLog {
 	std.SetOutputFormat(format)
+	return std
 }
 
 // SetTimeFormat change time format for standard clog instance
-func SetTimeFormat(format string) {
+func SetTimeFormat(format string) *CLog {
 	std.SetTimeFormat(format)
+	return std
 }
 
 // EnableColor turn on color output for standard clog instance
-func EnableColor() {
+func EnableColor() *CLog {
 	std.EnableColor()
+	return std
 }
 
 // DisableColor turn off color output for standard clog instance
-func DisableColor() {
+func DisableColor() *CLog {
 	std.EnableColor()
+	return std
 }
 
 // SetPrefix set a prefix for output for standard clog instance
-func SetPrefix(prefix string) {
+func SetPrefix(prefix string) *CLog {
 	std.SetPrefix(prefix)
+	return std
 }
 
 // EnableDiffs turn on time diff since last log line for standard clog instance
 // This can makes it easy to see how much time has passed since the last log line.
-func EnableDiffs() {
+func EnableDiffs() *CLog {
 	std.EnableDiffs()
+	return std
 }
 
 // DisableLogDiffs turn off log time diffing for standard clog instance
-func DisableLogDiffs() {
+func DisableLogDiffs() *CLog {
 	std.DisableLogDiffs()
+	return std
 }
 
 // SetWriter set io.Writer for output for standard clog instance
-func SetWriter(w io.Writer) {
+func SetWriter(w io.Writer) *CLog {
 	std.SetWriter(w)
+	return std
 }
 
 // SetLogLevel set log level (clog.LogLevelDebug, clog.LogLevelInfo, clog.LogLevelWarn, clog.LogLevelError) for standard clog instance
-func SetLogLevel(level LogLevel) {
+func SetLogLevel(level LogLevel) *CLog {
 	std.SetLogLevel(level)
+	return std
 }
 
 // SetUUID set UUID to print at the end of each line for standard clog instance
-func SetUUID(uuid string) {
+func SetUUID(uuid string) *CLog {
 	std.SetUUID(uuid)
+	return std
 }
 
 // EnablePid turn on printing pid to end of each line for standard clog instance
 // This can be useful if multiple processes could be writing to the same log file (service reload)
-func EnablePid() {
+func EnablePid() *CLog {
 	std.EnablePid()
+	return std
 }
 
 // DisablePid turn off printing pid to end of file for standard clog instance
-func DisablePid() {
+func DisablePid() *CLog {
 	std.DisablePid()
+	return std
 }
 
 // Debugf prints DEBUG level for standard clog instance
@@ -183,7 +195,6 @@ func Debugf(format string, args ...interface{}) {
 // Infof prints INFO level for standard clog instance
 func Infof(format string, args ...interface{}) {
 	std.Infof(format, args...)
-
 }
 
 // Warnf prints WARN level for standard clog instance
@@ -214,7 +225,7 @@ func (m *CLog) SetOutputFormat(format OutputFormat) {
 }
 
 // SetTimeFormat change time format
-func (m *CLog) SetTimeFormat(format string) {
+func (m *CLog) SetTimeFormat(format string) *CLog {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -223,10 +234,11 @@ func (m *CLog) SetTimeFormat(format string) {
 		defer m.m.Unlock()
 	}
 	m.dateTimeFormat = format
+	return m
 }
 
 // EnableColor turn on color output
-func (m *CLog) EnableColor() {
+func (m *CLog) EnableColor() *CLog {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -235,10 +247,11 @@ func (m *CLog) EnableColor() {
 		defer m.m.Unlock()
 	}
 	m.disableColor = false
+	return m
 }
 
 // DisableColor turn off color output
-func (m *CLog) DisableColor() {
+func (m *CLog) DisableColor() *CLog {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -247,10 +260,11 @@ func (m *CLog) DisableColor() {
 		defer m.m.Unlock()
 	}
 	m.disableColor = true
+	return m
 }
 
 // SetPrefix set a prefix
-func (m *CLog) SetPrefix(prefix string) {
+func (m *CLog) SetPrefix(prefix string) *CLog {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -259,11 +273,12 @@ func (m *CLog) SetPrefix(prefix string) {
 		defer m.m.Unlock()
 	}
 	m.prefix = prefix
+	return m
 }
 
 // EnableDiffs turn on time diff since last log line
 // This can makes it easy to see how much time has passed since the last log line.
-func (m *CLog) EnableDiffs() {
+func (m *CLog) EnableDiffs() *CLog {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -272,10 +287,11 @@ func (m *CLog) EnableDiffs() {
 		defer m.m.Unlock()
 	}
 	m.printDiffPreviousLogTime = true
+	return m
 }
 
 // DisableLogDiffs turn off log time diffing
-func (m *CLog) DisableLogDiffs() {
+func (m *CLog) DisableLogDiffs() *CLog {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -284,10 +300,11 @@ func (m *CLog) DisableLogDiffs() {
 		defer m.m.Unlock()
 	}
 	m.printDiffPreviousLogTime = false
+	return m
 }
 
 // SetWriter set io.Writer for output
-func (m *CLog) SetWriter(w io.Writer) {
+func (m *CLog) SetWriter(w io.Writer) *CLog {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -296,10 +313,11 @@ func (m *CLog) SetWriter(w io.Writer) {
 		defer m.m.Unlock()
 	}
 	m.writer = w
+	return m
 }
 
 // SetLogLevel set log level (clog.LogLevelDebug, clog.LogLevelInfo, clog.LogLevelWarn, clog.LogLevelError)
-func (m *CLog) SetLogLevel(level LogLevel) {
+func (m *CLog) SetLogLevel(level LogLevel) *CLog {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -308,10 +326,11 @@ func (m *CLog) SetLogLevel(level LogLevel) {
 		defer m.m.Unlock()
 	}
 	m.logLevel = level
+	return m
 }
 
 // SetUUID set UUID to print at the end of each line
-func (m *CLog) SetUUID(uuid string) {
+func (m *CLog) SetUUID(uuid string) *CLog {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -320,11 +339,12 @@ func (m *CLog) SetUUID(uuid string) {
 		defer m.m.Unlock()
 	}
 	m.uuid = uuid
+	return m
 }
 
 // EnablePid turn on printing pid to end of each line
 // This can be useful if multiple processes could be writing to the same log file (service reload)
-func (m *CLog) EnablePid() {
+func (m *CLog) EnablePid() *CLog {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -333,10 +353,11 @@ func (m *CLog) EnablePid() {
 		defer m.m.Unlock()
 	}
 	m.printPid = true
+	return m
 }
 
 // DisablePid turn off printing pid to end of file
-func (m *CLog) DisablePid() {
+func (m *CLog) DisablePid() *CLog {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -345,6 +366,7 @@ func (m *CLog) DisablePid() {
 		defer m.m.Unlock()
 	}
 	m.printPid = false
+	return m
 }
 
 // Debugf prints DEBUG level
@@ -426,6 +448,7 @@ func (m *CLog) getExtras() (extra string) {
 	if m.printPid {
 		extra += fmt.Sprintf(" PID:%d", m.pid)
 	}
+
 	return extra
 }
 
