@@ -42,6 +42,7 @@ type Log struct {
 
 type LogLevel int
 type OutputFormat int
+type PrintSource int
 
 const (
 	restore   = "\033[0m"
@@ -52,6 +53,10 @@ const (
 	purple    = "\033[00;35m"
 	cyan      = "\033[00;36m"
 	lightGrey = "\033[00;37m"
+
+	PrintSourceDisable  PrintSource = 1
+	PrintSourceFile     PrintSource = 2
+	PrintSourceFullPath PrintSource = 3
 
 	LogLevelDebug LogLevel = 1
 	LogLevelInfo  LogLevel = 2
@@ -83,7 +88,7 @@ type CLog struct {
 	writer                   io.Writer
 	previousLogTime          time.Time
 	printDiffPreviousLogTime bool
-	printFullFilePath        bool
+	printSource              PrintSource
 	disableWriterMutex       bool
 	prefix                   string
 	disableColor             bool
@@ -106,11 +111,27 @@ func New() (cLog *CLog) {
 		logLevel:       LogLevelDebug,
 		writer:         os.Stderr,
 		disableColor:   true,
+		printSource:    PrintSourceFile,
 		dateTimeFormat: defaultTimeFormat,
 		outputFormat:   OutputFormatStd,
 	}
 
 	return cLog
+}
+
+// Copy returns a copy of the current clog, changes to this copy will not affect the original clog instance
+func Copy() *CLog {
+	newClog := std.Copy()
+	return newClog
+}
+
+// SetPrintSource change between for standard clog instance
+// PrintSourceDisable - don't print source file and line number
+// PrintSourceFile - print just source file and line number
+// PrintSourceFullPath - print full path with source file and line number
+func SetPrintSource(printSource PrintSource) *CLog {
+	std.SetPrintSource(printSource)
+	return std
 }
 
 // SetOutputFormat change output format for standard clog instance
@@ -212,8 +233,44 @@ func Fatalf(format string, args ...interface{}) {
 	std.Fatalf(format, args...)
 }
 
+// Copy returns a copy of the current clog, changes to this copy will not affect the original clog instance
+func (m *CLog) Copy() *CLog {
+	newCLog := &CLog{
+		uuid:                     m.uuid,
+		pid:                      m.pid,
+		printPid:                 m.printPid,
+		logLevel:                 m.logLevel,
+		writer:                   m.writer,
+		printDiffPreviousLogTime: m.printDiffPreviousLogTime,
+		printSource:              m.printSource,
+		disableWriterMutex:       m.disableWriterMutex,
+		prefix:                   m.prefix,
+		disableColor:             m.disableColor,
+		dateTimeFormat:           m.dateTimeFormat,
+		outputFormat:             m.outputFormat,
+	}
+
+	return newCLog
+}
+
+// SetPrintSource change between
+// PrintSourceDisable - don't print source file and line number
+// PrintSourceFile - print just source file and line number
+// PrintSourceFullPath - print full path with source file and line number
+func (m *CLog) SetPrintSource(printSource PrintSource) *CLog {
+	if !m.disableWriterMutex {
+		writerMutex.Lock()
+		defer writerMutex.Unlock()
+	} else {
+		m.m.Lock()
+		defer m.m.Unlock()
+	}
+	m.printSource = printSource
+	return m
+}
+
 // SetOutputFormat change output format
-func (m *CLog) SetOutputFormat(format OutputFormat) {
+func (m *CLog) SetOutputFormat(format OutputFormat) *CLog {
 	if !m.disableWriterMutex {
 		writerMutex.Lock()
 		defer writerMutex.Unlock()
@@ -222,6 +279,7 @@ func (m *CLog) SetOutputFormat(format OutputFormat) {
 		defer m.m.Unlock()
 	}
 	m.outputFormat = format
+	return m
 }
 
 // SetTimeFormat change time format
@@ -465,6 +523,7 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 		prevLogDiffStr      string
 		level               string
 		n                   int
+		fileStr             string
 	)
 	msg = fmt.Sprintf(format, args...)
 
@@ -479,8 +538,15 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 		line = 0
 	}
 
-	if !m.printFullFilePath {
+	switch m.printSource {
+	case PrintSourceDisable:
+		fileStr = ""
+		file = ""
+	case PrintSourceFile:
 		file = filepath.Base(file)
+		fileStr = fmt.Sprintf("%s:%d", file, line)
+	case PrintSourceFullPath:
+		fileStr = fmt.Sprintf("%s:%d", file, line)
 	}
 
 	if m.prefix != "" {
@@ -528,10 +594,9 @@ func (m *CLog) logf(logLevel LogLevel, format string, args ...interface{}) (err 
 		}
 
 		if n, err = m.writer.Write(
-			[]byte(fmt.Sprintf("%s %s:%d%s [%s] %s%s%s\n",
+			[]byte(fmt.Sprintf("%s %s%s [%s] %s%s%s\n",
 				logTimeStr,
-				file,
-				line,
+				fileStr,
 				prefix,
 				level,
 				msg,
